@@ -10,7 +10,7 @@ namespace Base.Logging.Impl
 
         public LogLevel LevelMask { get; set; }
         public ILogFormatter Formatter { get; set; }
-        public string FullName { get; }
+        public string FullName { get; protected set; }
 
         public DefaultLogger(ILogger parent, string name)
         {
@@ -22,7 +22,7 @@ namespace Base.Logging.Impl
             var sb = new StringBuilder();
             if (parent != null)
                 sb.Append(parent.FullName).Append("/");
-            sb.Append(MakeFullName());
+            sb.Append(name);
             FullName = sb.ToString();
         }
 
@@ -32,13 +32,9 @@ namespace Base.Logging.Impl
             Appender = appender;
             LevelMask = LogLevel.DefaultMask;
             Formatter = DefaultFormatter.Instance;
-            FullName = MakeFullName();
+            FullName = name;
         }
 
-        protected virtual string MakeFullName()
-        {
-            return Name;
-        }
 
         public void Log(LogMessage aMessage)
         {
@@ -54,17 +50,13 @@ namespace Base.Logging.Impl
                 : base(name, appender)
             {
                 InstanceId = instanceId;
+                FullName = FullName + "#" + InstanceId;
             }
 
             public Instance(ILogger parent, string name, int instanceId)
                 : base(parent, name)
             {
                 InstanceId = instanceId;
-            }
-
-            protected override string MakeFullName()
-            {
-                return Name + "#" + InstanceId;
             }
         }
     }
