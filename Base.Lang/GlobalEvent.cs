@@ -49,7 +49,7 @@ namespace Base.Lang
             }
             catch (Exception ex)
             {
-                Console.WriteLine("CurrentDomain.ProcessExit() " + ex);
+                Bugs.LastResortEmergencyLog("CurrentDomain.ProcessExit() " + ex);
             }
         }
 
@@ -61,22 +61,16 @@ namespace Base.Lang
 
         private static void OnUnhandledException(Exception e, bool terminating)
         {
-            if (e != null) 
-            try
-            {
-                Bugs.Break("Unhandled exception " + e.ToString());
-                Fire(new UnhandledException(e));
-            }
-            catch (Exception ex)
-            {
+            if (e != null)
                 try
                 {
-                    Bugs.Break("while handling unhandled exception " + ex);
+                    Bugs.Break("Unhandled exception " + e.ToString());
+                    Fire(new UnhandledException(e));
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Bugs.LastResortEmergencyLog("while handling unhandled exception " + ex);
                 }
-            }
 
             if (terminating)
                 FireProcessExit();

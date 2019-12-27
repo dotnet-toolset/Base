@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Base.Logging.Impl
 {
-    public class DefaultFormatter:ILogFormatter
+    public class DefaultFormatter : ILogFormatter
     {
-        public static readonly ILogFormatter Instance=new DefaultFormatter();
+        public static readonly ILogFormatter Instance = new DefaultFormatter();
 
         public string Format(ILogger logger, LogMessage message)
         {

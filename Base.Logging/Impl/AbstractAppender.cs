@@ -41,12 +41,12 @@ namespace Base.Logging.Impl
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Bugs.LastResortEmergencyLog(e);
                     }
             });
             _flushDebouncer = new Debouncer(() => _queue.Add(Tuple.Create<ILogger, LogMessage>(null, null)), TimeSpan.FromMilliseconds(200));
 
-            GlobalEvent.Emitter.OfType<GlobalEvent.ProcessExit>().FirstAsync().Subscribe(e =>
+            GlobalEvent.Emitter.OfType<GlobalEvent.ProcessExit>().Take(1).Subscribe(e =>
             {
                 Dispose();
             });

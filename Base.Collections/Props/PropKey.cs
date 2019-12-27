@@ -32,6 +32,12 @@ namespace Base.Collections.Props
             return dp != null && dp.TryGetValue(_id, out var result) ? (TV) result : d;
         }
 
+        public bool Has(TC c)
+        {
+            var dp = c?.GetProps(false);
+            return dp != null && dp.ContainsKey(_id);
+        }
+
         public TV GetOrAdd(TC c, Func<TV> creator) => (TV) c.GetProps(true).GetOrAdd(_id, k => creator());
         public bool TryAdd(TC c, TV value) => c.GetProps(true).TryAdd(_id, value);
 

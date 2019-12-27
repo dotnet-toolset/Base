@@ -137,6 +137,7 @@ namespace Base.Cil
             var pars=typeof(TD).GetMethod("Invoke").GetParameters();
             var argTypes = pars.Select(p => p.ParameterType).ToArray();
             var ctor=t.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, argTypes, null);
+            if (ctor == null) return null;
             var dynamic = new DynamicMethod(string.Empty, t, argTypes, t);
             var  il = dynamic.GetILGenerator();
             for (var i = 0; i <  argTypes.Length; i++)

@@ -14,14 +14,14 @@ namespace Base.Logging
         public static ILogger GetLogger(this ILogger parent, string name)
         {
             return ChildLoggers.Get(parent, l => new WeakCache<string, ILogger>())
-                .Get(name, n => new DefaultLogger(parent, name));
+                .Get(name, n => new DefaultLogger(parent, name, null));
         }
 
         public static ILogger GetLogger(this ILogger parent, string name, int uid)
         {
             var key = name + "#" + uid;
             return ChildLoggers.Get(parent, l => new WeakCache<string, ILogger>())
-                .Get(key, n => new DefaultLogger.Instance(parent, name, uid));
+                .Get(key, n => new DefaultLogger(parent, name, uid));
         }
 
         public static string GetName(this LogLevel level)

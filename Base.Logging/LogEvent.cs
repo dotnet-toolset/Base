@@ -2,6 +2,7 @@ using Base.Lang;
 
 namespace Base.Logging
 {
+    //
     public abstract class LogEvent : GlobalEvent
     {
         public class CreateDefaultAppender : LogEvent

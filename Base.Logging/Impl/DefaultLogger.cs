@@ -6,33 +6,41 @@ namespace Base.Logging.Impl
     {
         public string Name { get; }
         public ILogger Parent { get; }
+        public int? InstanceId { get; }
         public ILogAppender Appender { get; }
 
         public LogLevel LevelMask { get; set; }
         public ILogFormatter Formatter { get; set; }
         public string FullName { get; protected set; }
 
-        public DefaultLogger(ILogger parent, string name)
+        public DefaultLogger(ILogger parent, string name, int? instanceId)
         {
             Parent = parent;
             Name = name;
             Appender = parent.Appender;
             LevelMask = parent.LevelMask;
             Formatter = parent.Formatter;
+            InstanceId = instanceId;
             var sb = new StringBuilder();
             if (parent != null)
                 sb.Append(parent.FullName).Append("/");
             sb.Append(name);
+            if (instanceId.HasValue)
+                sb.Append('#').Append(instanceId.Value);
             FullName = sb.ToString();
         }
 
-        public DefaultLogger(string name, ILogAppender appender)
+        public DefaultLogger(string name, ILogAppender appender, int? instanceId)
         {
             Name = name;
             Appender = appender;
+            InstanceId = instanceId;
             LevelMask = LogLevel.DefaultMask;
             Formatter = DefaultFormatter.Instance;
-            FullName = name;
+            if (instanceId.HasValue)
+                FullName = name + "#" + instanceId;
+            else
+                FullName = name;
         }
 
 
@@ -42,22 +50,5 @@ namespace Base.Logging.Impl
                 Appender.Enqueue(this, aMessage);
         }
 
-        public class Instance : DefaultLogger, IInstanceLogger
-        {
-            public int InstanceId { get; }
-
-            public Instance(string name, ILogAppender appender, int instanceId)
-                : base(name, appender)
-            {
-                InstanceId = instanceId;
-                FullName = FullName + "#" + InstanceId;
-            }
-
-            public Instance(ILogger parent, string name, int instanceId)
-                : base(parent, name)
-            {
-                InstanceId = instanceId;
-            }
-        }
     }
 }

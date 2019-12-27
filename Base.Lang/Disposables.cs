@@ -7,12 +7,23 @@ namespace Base.Lang
     public class Disposables : Disposable
     {
         private readonly ConcurrentBag<IDisposable> _bag = new ConcurrentBag<IDisposable>();
-        public Disposables() { }
+
+        class EmpptyDisposable : Disposable
+        {
+        }
+
+        public static readonly IDisposable Empty=new EmpptyDisposable();
+
+        public Disposables()
+        {
+        }
+
         public Disposables(IEnumerable<IDisposable> list)
         {
             foreach (var d in list)
                 _bag.Add(d);
         }
+
         public void Add(IDisposable disposable)
         {
             _bag.Add(disposable);

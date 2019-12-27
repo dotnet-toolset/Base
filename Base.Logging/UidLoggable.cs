@@ -25,6 +25,13 @@ namespace Base.Logging
             Logger = LogManager.GetLogger(Name, Uid);
         }
 
+        protected UidLoggable(ILoggable parent, string name)
+        {
+            Uid = Interlocked.Increment(ref _counter);
+            Name = name;
+            Logger = parent.Logger.GetLogger(Name, Uid);
+        }
+
         public override string ToString()
         {
             return new StringBuilder(Name).Append('#').Append(Uid).ToString();

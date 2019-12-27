@@ -58,7 +58,13 @@ namespace Base.Lang
                 sb.Append('-').Append(name);
             if (!String.IsNullOrEmpty(_subname))
                 sb.Append('-').Append(_subname);
-            return sb.Length == 0 ? Path.GetFileNameWithoutExtension(GetEntryAssembly().Location) : sb.ToString();
+            if (sb.Length == 0)
+            {
+                var ea = GetEntryAssembly();
+                if (ea != null) return Path.GetFileNameWithoutExtension(ea.Location);
+                return null;
+            }
+            return sb.ToString();
         }
 
         public static void SetApplicationSubName(string subname)

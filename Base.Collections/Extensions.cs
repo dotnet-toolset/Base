@@ -637,10 +637,6 @@ namespace Base.Collections
             return list as IReadOnlySet<T> ?? new ReadOnlySet<T>(list, comparer);
         }
 
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> e) where T : class
-        {
-            return e.Where(i => i != null);
-        }
 
         public static IEnumerable<T> WhereNotIn<T>(this IEnumerable<T> e, IEnumerable<T> set)
         {

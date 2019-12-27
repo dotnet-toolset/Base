@@ -10,8 +10,4 @@
       <ProjectReference Include="..\Base.Lang\Base.Lang.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="System.Reactive" Version="4.2.0" />
-    </ItemGroup>
-
 </Project>
