@@ -1,4 +1,5 @@
-﻿using Base.Lang;
+﻿using System.Collections.Generic;
+using Base.Lang;
 
 namespace Base.Logging
 {
@@ -22,9 +23,9 @@ namespace Base.Logging
         int? InstanceId { get; }
         
         /// <summary>
-        /// Appender to use for this logger
+        /// Appenders to use for this logger
         /// </summary>
-        ILogAppender Appender { get; }
+        IReadOnlyList<ILogAppender> Appenders { get; }
         
         /// <summary>
         /// Log messages with these levels only

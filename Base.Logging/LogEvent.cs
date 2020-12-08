@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Base.Lang;
 
 namespace Base.Logging
@@ -7,10 +8,11 @@ namespace Base.Logging
     {
         public class CreateDefaultAppender : LogEvent
         {
-            public ILogAppender Appender;
+            public readonly List<ILogAppender> Appenders;
 
-            internal CreateDefaultAppender()
+            internal CreateDefaultAppender(List<ILogAppender> _appenders)
             {
+                Appenders = _appenders;
             }
         }
 

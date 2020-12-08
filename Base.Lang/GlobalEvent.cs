@@ -14,6 +14,7 @@ namespace Base.Lang
             cd.ProcessExit += ProcessExitHandler;
             cd.UnhandledException +=
                 (s, e) => OnUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
+            Console.CancelKeyPress += (s, e) => FireProcessExit();
         }
 
         public static T Fire<T>(T e) where T : GlobalEvent

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace Base.Lang
 {
@@ -10,13 +11,27 @@ namespace Base.Lang
         {
             try
             {
-                Console.WriteLine(Convert.ToString(message));
+                var str = Convert.ToString(message);
+                try
+                {
+                    Console.WriteLine(str);
+                }
+                catch
+                {
+                }
+                try
+                {
+                    Debug.WriteLine(str);
+                }
+                catch
+                {
+                }
             }
             catch
             {
             }
         }
-        
+
 
         [ExcludeFromCodeCoverage]
         public static void Check(bool assertion, string msg = null)
@@ -63,6 +78,15 @@ namespace Base.Lang
         public static void AssertNotNull(object obj, string message)
         {
             Assert(obj != null, message);
+        }
+
+        [Conditional("DEBUG")]
+        public static void WaitForDebugger(bool brk = true)
+        {
+            while (!Debugger.IsAttached)
+                Thread.Yield();
+            if (brk)
+                Debugger.Break();
         }
     }
 }

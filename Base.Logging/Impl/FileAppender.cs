@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Base.Logging.Impl
 {
-    class FileAppender : AbstractAppender
+    class FileAppender : AsyncAppender
     {
         protected readonly string Base;
         protected readonly string _name;

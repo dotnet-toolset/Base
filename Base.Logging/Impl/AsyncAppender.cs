@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace Base.Logging.Impl
 {
-    public abstract class AbstractAppender : Disposable, ILogAppender
+    public abstract class AsyncAppender : Disposable, ILogAppender
     {
         private readonly AsyncQueue<Tuple<ILogger, LogMessage>> _queue = new AsyncQueue<Tuple<ILogger, LogMessage>>();
         private readonly Task _task;
         private readonly Debouncer _flushDebouncer;
         private bool _flushImmediately;
 
-        protected AbstractAppender()
+        protected AsyncAppender()
         {
             _task = Task.Run(async () =>
             {
@@ -81,7 +81,7 @@ namespace Base.Logging.Impl
             }
         }
 
-        public void Enqueue(ILogger logger, LogMessage message)
+        public void Append(ILogger logger, LogMessage message)
         {
             if (IsDisposed) return;
             _queue.Add(Tuple.Create(logger, message));

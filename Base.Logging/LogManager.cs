@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -15,7 +16,7 @@ namespace Base.Logging
         private static readonly ICache<string, ILogger> LoggersByName = new WeakCache<string, ILogger>();
         private static readonly ICache<string, FileAppender> _fileAppenders = new WeakCache<string, FileAppender>();
 
-        private static ILogAppender _defaultAppender;
+        private static IReadOnlyList<ILogAppender> _defaultAppenders;
         private static string _defaultLogFolder;
         public static readonly ILogger Default;
 
@@ -51,25 +52,28 @@ namespace Base.Logging
             return _defaultLogFolder;
         }
 
-        public static ILogAppender GetDefaultAppender()
+        public static IReadOnlyList<ILogAppender> GetDefaultAppenders()
         {
-            if (_defaultAppender == null)
+            if (_defaultAppenders == null)
                 lock (typeof(LogManager))
-                    if (_defaultAppender == null)
+                    if (_defaultAppenders == null)
                     {
-                        var ev = GlobalEvent.Fire(new LogEvent.CreateDefaultAppender());
-                        _defaultAppender = ev.Appender ??
-                                           GetFileAppender(GetDefaultLogFolder(), AppUtils.GetApplicationName(), false);
+                        var ev = GlobalEvent.Fire(new LogEvent.CreateDefaultAppender(new List<ILogAppender>
+                        {
+                            GetFileAppender(GetDefaultLogFolder(), AppUtils.GetApplicationName(),
+                                false)
+                        }));
+                        _defaultAppenders = ev.Appenders;
                     }
 
-            return _defaultAppender;
+            return _defaultAppenders;
         }
 
         public static ILogger GetLogger(string name) =>
-            LoggersByName.Get(name, n => new DefaultLogger(n, GetDefaultAppender(), null));
+            LoggersByName.Get(name, n => new DefaultLogger(n, GetDefaultAppenders(), null));
 
         public static ILogger GetLogger(string name, int uid) => LoggersByName.Get(name + "#" + uid,
-            n => new DefaultLogger(name, GetDefaultAppender(), uid));
+            n => new DefaultLogger(name, GetDefaultAppenders(), uid));
 
 
         private static readonly ThreadLocal<int> LoggableRecursionGuard = new ThreadLocal<int>(() => 0);
@@ -89,7 +93,7 @@ namespace Base.Logging
                 }
 
                 var name = (instance as INamed)?.Name ?? Convert.ToString(instance);
-                result = new DefaultLogger(name, GetDefaultAppender(), null);
+                result = new DefaultLogger(name, GetDefaultAppenders(), null);
             }
             finally
             {
@@ -103,7 +107,7 @@ namespace Base.Logging
         {
             var key = "file://" + Path.GetFullPath(Path.Combine(abase, name));
             return LoggersByName.Get(key,
-                k => new DefaultLogger(name, GetFileAppender(abase, name, aAppend), null));
+                k => new DefaultLogger(name, new[] {GetFileAppender(abase, name, aAppend)}, null));
         }
 
         public static ILogger GetFileLogger(string name, bool aAppend = false)

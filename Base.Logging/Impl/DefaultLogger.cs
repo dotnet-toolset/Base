@@ -1,13 +1,21 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Text;
 
 namespace Base.Logging.Impl
 {
     public class DefaultLogger : ILogger
     {
+        private readonly IReadOnlyList<ILogAppender> _appenders;
+        
         public string Name { get; }
         public ILogger Parent { get; }
         public int? InstanceId { get; }
-        public ILogAppender Appender { get; }
+
+        public IReadOnlyList<ILogAppender> Appenders =>
+            _appenders ?? Parent?.Appenders ?? LogManager.GetDefaultAppenders();
+        
 
         public LogLevel LevelMask { get; set; }
         public ILogFormatter Formatter { get; set; }
@@ -17,7 +25,6 @@ namespace Base.Logging.Impl
         {
             Parent = parent;
             Name = name;
-            Appender = parent.Appender;
             LevelMask = parent.LevelMask;
             Formatter = parent.Formatter;
             InstanceId = instanceId;
@@ -30,10 +37,10 @@ namespace Base.Logging.Impl
             FullName = sb.ToString();
         }
 
-        public DefaultLogger(string name, ILogAppender appender, int? instanceId)
+        public DefaultLogger(string name, IReadOnlyList<ILogAppender> appenders, int? instanceId)
         {
             Name = name;
-            Appender = appender;
+            _appenders = appenders;
             InstanceId = instanceId;
             LevelMask = LogLevel.DefaultMask;
             Formatter = DefaultFormatter.Instance;
@@ -47,7 +54,8 @@ namespace Base.Logging.Impl
         public void Log(LogMessage aMessage)
         {
             if ((LevelMask & aMessage.Level) != 0)
-                Appender.Enqueue(this, aMessage);
+                foreach (var appender in Appenders)
+                    appender.Append(this, aMessage);
         }
 
     }

@@ -22,5 +22,9 @@ namespace Base.Rng
         public static IRng CreateSeeded(string seed)
             => Create(SHA256.Create(), seed);
 
+        /// <summary>
+        /// Default pseudo-random number generator
+        /// </summary>
+        public static readonly IRng Default = CreateSeeded("default");
     }
 }

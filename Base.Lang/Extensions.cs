@@ -148,6 +148,22 @@ namespace Base.Lang
             return vResult.ToString();
         }
 
+        public static string Join(this IEnumerable<string> a, char aDelimiter,
+            Func<string, string> aStringifier = null)
+        {
+            if (a == null) return null;
+            var vResult = new StringBuilder();
+            foreach (var v in a)
+            {
+                if (vResult.Length > 0)
+                    vResult.Append(aDelimiter);
+                var s = aStringifier == null ? v : aStringifier(v);
+                vResult.Append(s);
+            }
+
+            return vResult.ToString();
+        }
+
         public static string[] SplitLines(this string s, bool trim = true, bool skipEmpty = true)
         {
             var vResult = new List<string>();
@@ -227,6 +243,13 @@ namespace Base.Lang
             return t.IsFaulted || t.IsCanceled;
         }
 
+        /// <summary>
+        /// Cap maximum task execution time, return task with a flag
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="timeout"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static async Task<(T, bool)> Timed<T>(this Task<T> task, TimeSpan? timeout)
         {
             if (!timeout.HasValue) return (await task, false);
@@ -729,7 +752,7 @@ namespace Base.Lang
 
         public static T OneOrDefault<T>(this IEnumerable<T> source, T defaultValue = default(T))
         {
-            using (IEnumerator<T> enumerator = source.GetEnumerator())
+            using (var enumerator = source.GetEnumerator())
                 if (enumerator.MoveNext()) // Is there at least one item?
                 {
                     T item = enumerator.Current; // Save it.
@@ -765,5 +788,76 @@ namespace Base.Lang
             return obj;
         }
 
+        public static Task<T> WithTimeout<T>(this Task<T> task, TimeSpan? timeout)
+        {
+            if (!timeout.HasValue) return task;
+            var cts = new CancellationTokenSource(timeout.Value);
+            return task.WithCancellation(cts.Token);
+        }
+
+        public static Task<T> WithTimeout<T>(this Task<T> task, TimeSpan? timeout, CancellationToken ct)
+        {
+            if (!timeout.HasValue) return task;
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(timeout.Value).Token,
+                ct);
+            return task.WithCancellation(cts.Token);
+        }
+
+        public static async Task<T> WithTimeout<T>(this Task<T> task, TimeSpan? timeout, T def, CancellationToken ct)
+        {
+            if (!timeout.HasValue) return await task;
+            var t = await Task.WhenAny(task, Task.Delay(timeout.Value, ct)).WithCancellation(ct);
+            if (t == task) return await task;
+            return def;
+        }
+
+        public static Task WithTimeout(this Task task, TimeSpan? timeout)
+        {
+            if (!timeout.HasValue) return task;
+            var cts = new CancellationTokenSource(timeout.Value);
+            return task.WithCancellation(cts.Token);
+        }
+
+        public static Task WithTimeout(this Task task, TimeSpan? timeout, CancellationToken ct)
+        {
+            if (!timeout.HasValue) return task;
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(timeout.Value).Token,
+                ct);
+            return task.WithCancellation(cts.Token);
+        }
+
+        public static Task<T> WithCancellation<T>(this Task<T> task, CancellationToken ct)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            var registration = ct.Register(s => ((TaskCompletionSource<T>) s).TrySetCanceled(), tcs);
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    tcs.TrySetException(t.Exception.InnerException);
+                else if (t.IsCanceled)
+                    tcs.TrySetCanceled();
+                else tcs.TrySetResult(t.Result);
+            }, TaskContinuationOptions.ExecuteSynchronously);
+            tcs.Task.ContinueWith((_, state) => { ((CancellationTokenRegistration) state).Dispose(); }, registration,
+                TaskContinuationOptions.ExecuteSynchronously);
+            return tcs.Task;
+        }
+
+        public static Task WithCancellation(this Task task, CancellationToken ct)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var registration = ct.Register(s => ((TaskCompletionSource<bool>) s).TrySetCanceled(), tcs);
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    tcs.TrySetException(t.Exception.InnerException);
+                else if (t.IsCanceled)
+                    tcs.TrySetCanceled();
+                else tcs.TrySetResult(true);
+            }, TaskContinuationOptions.ExecuteSynchronously);
+            tcs.Task.ContinueWith((_, state) => { ((CancellationTokenRegistration) state).Dispose(); }, registration,
+                TaskContinuationOptions.ExecuteSynchronously);
+            return tcs.Task;
+        }
     }
 }

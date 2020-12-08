@@ -557,7 +557,7 @@ namespace Base.Collections
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (valueSelector == null) throw new ArgumentNullException(nameof(valueSelector));
             return source.GroupBy(valueSelector)
-                .Where(group => group.Count() > 1)
+                .Where(group => @group.Count() > 1)
                 .SelectMany(t => t);
         }
 
@@ -725,11 +725,33 @@ namespace Base.Collections
         }
         
         #endregion
+        
+        #region Dictionaries
+        
+        public static T SafeGet<T>(this IReadOnlyList<T> list, int index, T def = default(T))
+        {
+            if (list != null && index >= 0 && index < list.Count)
+                return list[index];
+            return def;
+        }
+
+        public static TI GetOrCreate<TK, TV, TI>(this IDictionary<TK, TV> aDictionary, TK aKey, Func<TK, TI> aInit)
+            where TI : TV
+        {
+            if (aDictionary == null || aKey == null) return default(TI);
+            if (!aDictionary.TryGetValue(aKey, out var vResult))
+                aDictionary[aKey] = vResult = aInit(aKey);
+            return (TI) vResult;
+        }
+        
+        #endregion
+
         public static async Task<T> WithYield<T>(this Task<T> task)
         {
             var result = await task.ConfigureAwait(false);
             await Task.Yield();
             return result;
         }
+        
     }
 }

@@ -15,6 +15,6 @@ namespace Base.Logging
         /// </summary>
         /// <param name="logger">logger that was used to log the message</param>
         /// <param name="message">message to send to the log</param>
-        void Enqueue(ILogger logger, LogMessage message);
+        void Append(ILogger logger, LogMessage message);
     }
 }

@@ -2,6 +2,7 @@
 using System.IO;
 using Base.Collections;
 using Base.Collections.Impl;
+using Base.Lang;
 using Base.Logging.Impl;
 
 namespace Base.Logging
@@ -195,16 +196,17 @@ namespace Base.Logging
                 Log(logger, new LogMessage(level, string.Format(format, args)));
         }
 
-        public static void Log(this ILogger logger, LogMessage aMessage)
+        public static void Log(this ILogger logger, LogMessage message)
         {
             if (logger != null)
                 try
                 {
-                    logger.Log(aMessage);
+                    logger.Log(message);
                 }
                 catch (Exception e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e);
+                    Bugs.LastResortEmergencyLog(message);
+                    Bugs.LastResortEmergencyLog(e);
                 }
         }
 

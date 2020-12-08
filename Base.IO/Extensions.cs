@@ -79,7 +79,7 @@ namespace Base.IO
 
         public static void Write(this Stream stream, string s)
         {
-            if (stream == null || string.IsNullOrEmpty(s)) return;
+            if (stream == null || String.IsNullOrEmpty(s)) return;
             using (var w = new StreamWriter(stream, Utf8NoBom, Math.Max(s.Length, 1024), true))
             {
                 w.Write(s);
@@ -89,7 +89,7 @@ namespace Base.IO
 
         public static async Task WriteAsync(this Stream stream, string s, CancellationToken ct)
         {
-            if (stream == null || string.IsNullOrEmpty(s)) return;
+            if (stream == null || String.IsNullOrEmpty(s)) return;
             using (var w = new StreamWriter(stream, Utf8NoBom, Math.Max(s.Length, 1024), true))
             {
                 await w.WriteAsync(s);
@@ -112,14 +112,14 @@ namespace Base.IO
 
         public static void Write(this FileInfo file, string s)
         {
-            if (file == null || string.IsNullOrEmpty(s)) return;
+            if (file == null || String.IsNullOrEmpty(s)) return;
             using (var stream = file.Open(FileMode.Create)) // don't use file.OpenWrite, it does not truncate!
                 stream.Write(s);
         }
 
         public static async Task WriteAsync(this FileInfo file, string s, CancellationToken ct)
         {
-            if (file == null || string.IsNullOrEmpty(s)) return;
+            if (file == null || String.IsNullOrEmpty(s)) return;
             using (var stream = file.Open(FileMode.Create)) // don't use file.OpenWrite, it does not truncate!
                 await stream.WriteAsync(s, ct);
         }
@@ -208,6 +208,51 @@ namespace Base.IO
             int count;
             while ((count = source.Read(array, 0, array.Length)) != 0)
                 destination.Write(array, 0, count);
-        }       
+        }
+
+        
+        #region  Little Endian
+        
+        public static void WriteLe(this byte[] data, ushort value, int ofs)
+        {
+            data[ofs] = (byte) (value & 0xFF);
+            data[ofs + 1] = (byte) ((value >> 8) & 0xFF);
+        }
+
+        public static void WriteLe(this byte[] data, short value, int ofs)
+        {
+            data[ofs] = (byte) (value & 0xFF);
+            data[ofs + 1] = (byte) ((value >> 8) & 0xFF);
+        }
+
+        public static void WriteLe(this byte[] data, uint value, int ofs)
+        {
+            data[ofs] = (byte) (value & 0xFF);
+            data[ofs + 1] = (byte) ((value >> 8) & 0xFF);
+            data[ofs + 2] = (byte) ((value >> 16) & 0xFF);
+            data[ofs + 3] = (byte) ((value >> 24) & 0xFF);
+        }
+
+        public static void WriteLe(this byte[] data, int value, int ofs)
+        {
+            data[ofs] = (byte) (value & 0xFF);
+            data[ofs + 1] = (byte) ((value >> 8) & 0xFF);
+            data[ofs + 2] = (byte) ((value >> 16) & 0xFF);
+            data[ofs + 3] = (byte) ((value >> 24) & 0xFF);
+        }
+
+        public static void WriteLe(this byte[] data, long value, int ofs)
+        {
+            data[ofs] = (byte) (value & 0xFF);
+            data[ofs + 1] = (byte) ((value >> 8) & 0xFF);
+            data[ofs + 2] = (byte) ((value >> 16) & 0xFF);
+            data[ofs + 3] = (byte) ((value >> 24) & 0xFF);
+            data[ofs + 4] = (byte) ((value >> 32) & 0xFF);
+            data[ofs + 5] = (byte) ((value >> 40) & 0xFF);
+            data[ofs + 6] = (byte) ((value >> 48) & 0xFF);
+            data[ofs + 7] = (byte) ((value >> 56) & 0xFF);
+        }
+        
+        #endregion
     }
 }
